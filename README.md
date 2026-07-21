@@ -8,9 +8,6 @@ Argus is a multi-tenant TPRM platform built for mid-market and AI-first companie
 that have **no dedicated GRC/security-analyst team**. It turns vendor risk work —
 normally weeks of spreadsheets and email chasing — into an autonomous workflow.
 
-Built for **OpenAI Build Week** (Work & Productivity track), on top of the
-open-source [`Studio1HQ/tprm-agent`](https://github.com/Studio1HQ/tprm-agent) (MIT).
-
 ---
 
 ## What makes it different
@@ -362,8 +359,7 @@ diagrams.html    # interactive architecture/flow diagrams (PNG/SVG export)
   human Approver + vendor-invite fallback), the tiering + residual-scoring rubric, and
   the AI-vendor risk dimensions.
 
-See [`SUBMISSION.md`](./SUBMISSION.md) for the Devpost checklist and
-[`docs/YC_APPLICATION.md`](./docs/YC_APPLICATION.md) for the startup narrative.
+See [`SUBMISSION.md`](./SUBMISSION.md) for the submission checklist.
 
 ---
 

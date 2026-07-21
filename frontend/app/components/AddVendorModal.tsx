@@ -21,6 +21,19 @@ export function AddVendorModal({ onClose }: { onClose: () => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [vendorId, setVendorId] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  function goToPortfolio() {
+    onClose();
+    router.push("/");
+  }
+
+  function goToReport() {
+    if (vendorId) {
+      onClose();
+      router.push(`/vendors/${vendorId}`);
+    }
+  }
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -59,24 +72,21 @@ export function AddVendorModal({ onClose }: { onClose: () => void }) {
 
   if (assessmentId) {
     return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 680 }}>
-          <h3>Assessing {name}</h3>
+      <div className="modal-backdrop" onClick={goToPortfolio} role="presentation">
+        <div className="modal" style={{ maxWidth: 680 }} onClick={(e) => e.stopPropagation()}>
+          <h3>{done ? `Assessment complete — ${name}` : `Assessing ${name}`}</h3>
           <p className="hint">
-            Argus's autonomous crew is running the full third-party risk assessment.
+            {done
+              ? "The autonomous crew finished. Open the full report or return to your portfolio."
+              : "Argus's crew is running in the background — you can watch here, or return to the portfolio and it keeps going."}
           </p>
-          <AssessmentStream assessmentId={assessmentId} />
+          <AssessmentStream assessmentId={assessmentId} onComplete={() => setDone(true)} />
           <div className="modal-actions">
-            <button className="btn btn-ghost" onClick={onClose}>
-              Close
+            <button className="btn btn-ghost" onClick={goToPortfolio}>
+              {done ? "Back to portfolio" : "Run in background → Portfolio"}
             </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                if (vendorId) router.push(`/vendors/${vendorId}`);
-              }}
-            >
-              View full report →
+            <button className="btn btn-primary" onClick={goToReport}>
+              {done ? "View full report →" : "Open vendor page →"}
             </button>
           </div>
         </div>
