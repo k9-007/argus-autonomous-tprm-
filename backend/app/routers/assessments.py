@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
 from ..db import get_db, SessionLocal
-from ..models import Assessment, ActivityLog
+from ..models import Assessment, ActivityLog, Org
+from .deps import get_current_org
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 
@@ -27,11 +28,16 @@ def _activity_dict(r: ActivityLog) -> dict:
     }
 
 
-@router.get("/{assessment_id}")
-def get_assessment(assessment_id: str, db: Session = Depends(get_db)):
+def _assessment_for_org(db: Session, assessment_id: str, org: Org) -> Assessment:
     a = db.get(Assessment, assessment_id)
-    if a is None:
+    if a is None or a.org_id != org.id:
         raise HTTPException(status_code=404, detail="Assessment not found")
+    return a
+
+
+@router.get("/{assessment_id}")
+def get_assessment(assessment_id: str, org: Org = Depends(get_current_org), db: Session = Depends(get_db)):
+    a = _assessment_for_org(db, assessment_id, org)
     return {
         "id": a.id, "vendor_id": a.vendor_id, "status": a.status,
         "decision": _enum(a.decision), "summary": a.summary,
@@ -41,21 +47,27 @@ def get_assessment(assessment_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{assessment_id}/activity")
-def get_activity(assessment_id: str, after: int = 0, db: Session = Depends(get_db)):
+def get_activity(assessment_id: str, after: int = 0, org: Org = Depends(get_current_org), db: Session = Depends(get_db)):
+    a = _assessment_for_org(db, assessment_id, org)
     rows = db.execute(
         select(ActivityLog)
         .where(ActivityLog.assessment_id == assessment_id, ActivityLog.seq > after)
         .order_by(ActivityLog.seq)
     ).scalars().all()
-    a = db.get(Assessment, assessment_id)
     return {
-        "status": a.status if a else "unknown",
+        "status": a.status,
         "activity": [_activity_dict(r) for r in rows],
     }
 
 
 @router.get("/{assessment_id}/stream")
-async def stream_activity(assessment_id: str):
+async def stream_activity(assessment_id: str, org: Org = Depends(get_current_org)):
+    # Resolve authorization before creating a long-lived stream.
+    db = SessionLocal()
+    try:
+        _assessment_for_org(db, assessment_id, org)
+    finally:
+        db.close()
     async def event_gen():
         last = 0
         while True:

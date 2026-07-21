@@ -33,6 +33,18 @@ class Settings:
     # Public URL for vendor-collaboration invite links
     PUBLIC_URL: str = os.getenv("ARGUS_PUBLIC_URL", "http://localhost:3000")
 
+    # Browser clients allowed to call the API. Comma-separate values in production.
+    CORS_ORIGINS: list[str] = [
+        origin.strip()
+        for origin in os.getenv("ARGUS_CORS_ORIGINS", "http://localhost:3000").split(",")
+        if origin.strip()
+    ]
+
+    # Safety limits for evidence ingestion. Files are parsed in memory, so keep the
+    # defaults conservative and raise them explicitly for trusted deployments.
+    MAX_UPLOAD_BYTES: int = int(os.getenv("ARGUS_MAX_UPLOAD_BYTES", str(15 * 1024 * 1024)))
+    MAX_UPLOAD_FILES: int = int(os.getenv("ARGUS_MAX_UPLOAD_FILES", "10"))
+
     @property
     def active_llm_model(self) -> str:
         """Model name for the currently selected provider."""

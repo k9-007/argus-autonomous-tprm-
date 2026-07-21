@@ -51,21 +51,10 @@ export function AssessmentStream({
   }, [items]);
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        {done ? (
-          <span className="badge low dot">Assessment complete</span>
-        ) : (
-          <>
-            <span className="live-dot" />
-            <span style={{ color: "var(--text-dim)", fontSize: 13 }}>
-              The crew is working autonomously...
-            </span>
-          </>
-        )}
-      </div>
+    <div className="assessment-stream">
       <CrewFlow items={items} done={done} />
-      <div className="feed" ref={feedRef}>
+      <div className="feed crew-event-feed" ref={feedRef} aria-label="Live crew handoffs">
+        <div className="feed-label">Live handoffs</div>
         {items.map((it, i) => (
           <div key={i} className={`feed-item ${it.status}`}>
             <div className="agent">{it.agent}</div>

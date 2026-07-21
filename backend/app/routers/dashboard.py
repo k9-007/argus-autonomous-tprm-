@@ -19,5 +19,5 @@ def portfolio(org: Org = Depends(get_current_org), db: Session = Depends(get_db)
 
 
 @router.get("/passport")
-def passport(db: Session = Depends(get_db)):
+def passport(org: Org = Depends(get_current_org), db: Session = Depends(get_db)):
     return services.passport_network(db)

@@ -1,9 +1,4 @@
-"""Shared router dependencies.
-
-Resolves the current user + org from an `Authorization: Bearer <token>` header.
-For frictionless local/demo use, falls back to the seeded demo org when no valid
-token is supplied.
-"""
+"""Shared router dependencies for bearer-token authentication and tenant isolation."""
 
 from __future__ import annotations
 
@@ -38,12 +33,9 @@ def get_current_org(
     user: User | None = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Org:
-    if user is not None:
-        org = db.get(Org, user.org_id)
-        if org:
-            return org
-    # Fallback: seeded demo org (keeps local/offline demo frictionless).
-    org = db.execute(select(Org).order_by(Org.created_at)).scalars().first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    org = db.get(Org, user.org_id)
     if org is None:
-        raise HTTPException(status_code=500, detail="No org available")
+        raise HTTPException(status_code=401, detail="Organization not found")
     return org

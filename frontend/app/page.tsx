@@ -11,6 +11,8 @@ export default function Portfolio() {
   const [data, setData] = useState<any>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [riskFilter, setRiskFilter] = useState("all");
 
   const load = useCallback(async () => {
     try {
@@ -50,6 +52,14 @@ export default function Portfolio() {
 
   const counts = data?.counts;
   const vendors = data?.vendors || [];
+  const visibleVendors = vendors.filter((vendor: any) => {
+    const needle = query.trim().toLowerCase();
+    const matchesSearch = !needle || [vendor.name, vendor.category, vendor.vendor_type]
+      .filter(Boolean)
+      .some((value: string) => value.toLowerCase().includes(needle));
+    const matchesRisk = riskFilter === "all" || vendor.band === riskFilter;
+    return matchesSearch && matchesRisk;
+  });
 
   return (
     <>
@@ -68,7 +78,7 @@ export default function Portfolio() {
         {data?.error && (
           <div className="card">
             <b>Could not reach the Argus API.</b>
-            <p className="hint">Start the backend on {api.base} (see backend/README).</p>
+            <p className="hint">Start the backend on {api.base} (see the project README).</p>
           </div>
         )}
 
@@ -99,12 +109,35 @@ export default function Portfolio() {
               </div>
             </div>
 
-            <div className="section-title">All vendors</div>
+            <div className="section-heading">
+              <div>
+                <div className="section-title">All vendors</div>
+                <div className="section-subtitle">{visibleVendors.length} of {vendors.length} vendors shown</div>
+              </div>
+              <div className="table-tools" aria-label="Vendor filters">
+                <input
+                  aria-label="Search vendors"
+                  className="search-input"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search vendors"
+                />
+                <select aria-label="Filter by risk" value={riskFilter} onChange={(event) => setRiskFilter(event.target.value)}>
+                  <option value="all">All risk levels</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+            </div>
             <div className="card" style={{ padding: 0 }}>
               {vendors.length === 0 ? (
                 <div className="empty">No vendors yet. Add your first vendor to see the crew in action.</div>
+              ) : visibleVendors.length === 0 ? (
+                <div className="empty">No vendors match those filters. Clear the search or choose a different risk level.</div>
               ) : (
-                <table className="table">
+                <div className="table-scroll"><table className="table">
                   <thead>
                     <tr>
                       <th>Vendor</th>
@@ -119,8 +152,13 @@ export default function Portfolio() {
                     </tr>
                   </thead>
                   <tbody>
-                    {vendors.map((v: any) => (
-                      <tr key={v.id} onClick={() => router.push(`/vendors/${v.id}`)}>
+                    {visibleVendors.map((v: any) => (
+                      <tr key={v.id} onClick={() => router.push(`/vendors/${v.id}`)} tabIndex={0} onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(`/vendors/${v.id}`);
+                        }
+                      }}>
                         <td>
                           <div className="name">{v.name}</div>
                           <div className="muted">{v.category}</div>
@@ -145,7 +183,7 @@ export default function Portfolio() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
 

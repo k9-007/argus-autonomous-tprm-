@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../lib/api";
 import { AssessmentStream } from "./AssessmentStream";
@@ -22,11 +22,19 @@ export function AddVendorModal({ onClose }: { onClose: () => void }) {
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [vendorId, setVendorId] = useState<string | null>(null);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !assessmentId) onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [assessmentId, onClose]);
+
   async function submit() {
-    if (!name) return;
+    if (!name.trim()) return;
     setSubmitting(true);
     try {
-      const body: any = { name, website, intake_mode: mode };
+      const body: any = { name: name.trim(), website: website.trim() || undefined, intake_mode: mode };
       if (mode === "link") body.trust_center_url = trustUrl || website;
       const res = await api.createVendor(body);
       setVendorId(res.vendor_id);
@@ -77,9 +85,9 @@ export function AddVendorModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Add a vendor</h3>
+    <div className="modal-backdrop" onClick={onClose} role="presentation">
+      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="add-vendor-title">
+        <h3 id="add-vendor-title">Add a vendor</h3>
         <p className="hint">Argus profiles, assesses and starts monitoring automatically.</p>
 
         <div className="mode-toggle">
@@ -95,7 +103,7 @@ export function AddVendorModal({ onClose }: { onClose: () => void }) {
 
         <div className="field">
           <label>Vendor name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Stripe" />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Stripe" autoFocus />
         </div>
         <div className="field">
           <label>Website</label>

@@ -22,6 +22,7 @@ from ..data.fixtures import lookup_demo
 from ..agents.orchestrator import run_assessment
 from .. import evidence as evidence_mod
 from .. import services
+from ..config import settings
 from .deps import get_current_org
 
 router = APIRouter(prefix="/vendors", tags=["vendors"])
@@ -70,19 +71,20 @@ def create_vendor(
     org: Org = Depends(get_current_org),
     db: Session = Depends(get_db),
 ):
-    website = body.website
-    if not website and body.trust_center_url:
+    website = str(body.website) if body.website else None
+    trust_center_url = str(body.trust_center_url) if body.trust_center_url else None
+    if not website and trust_center_url:
         # Derive a website guess from the trust-center domain.
-        website = body.trust_center_url
+        website = trust_center_url
 
-    vendor_key = _domain_key(website, body.trust_center_url)
+    vendor_key = _domain_key(website, trust_center_url)
     demo = lookup_demo(vendor_key)
 
     vendor = Vendor(
         org_id=org.id,
         name=body.name,
         website=website,
-        trust_center_url=body.trust_center_url or (demo.get("trust_center_url") if demo else None),
+        trust_center_url=trust_center_url or (demo.get("trust_center_url") if demo else None),
         category=body.category or (demo.get("category") if demo else None),
         vendor_type=VendorType((demo.get("vendor_type") if demo else None) or "saas"),
         data_sensitivity=body.data_sensitivity or "unknown",
@@ -171,9 +173,17 @@ async def upload_documents(
     if vendor is None or vendor.org_id != org.id:
         raise HTTPException(status_code=404, detail="Vendor not found")
 
+    if not files or len(files) > settings.MAX_UPLOAD_FILES:
+        raise HTTPException(status_code=422, detail=f"Upload between 1 and {settings.MAX_UPLOAD_FILES} files")
+
     parsed_docs = []
     for f in files:
         raw = await f.read()
+        if len(raw) > settings.MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"{f.filename or 'File'} exceeds the {settings.MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit",
+            )
         info = evidence_mod.parse_document(f.filename or "document", raw)
         db.add(Document(
             vendor_id=vendor.id, org_id=org.id,

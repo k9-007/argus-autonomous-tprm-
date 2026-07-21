@@ -99,6 +99,11 @@ Open <http://localhost:3000>.
 > examples (Stripe, Cursor, Acme MCP). Add `OPENAI_API_KEY` + `ARGUS_LLM_MODEL=gpt-5.6`
 > and Bright Data keys to enable live GPT-5.6 reasoning and real web research.
 
+> **Deployment baseline:** the seeded demo account is still available, but every
+> workspace API endpoint requires its bearer token. Set `ARGUS_CORS_ORIGINS` to the
+> deployed frontend origin (never `*` with credentials), use Postgres, and configure
+> explicit upload limits before exposing the service outside a trusted environment.
+
 ---
 
 ## Demo script (< 3 minutes)
