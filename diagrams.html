@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Argus — Architecture & Flow Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0f17; --bg-elev: #111722; --bg-elev2: #161d2b;
+    --border: #202a3b; --text: #e6edf6; --dim: #9aa7bd; --faint: #66748c;
+    --accent: #22d3ee; --emerald: #34d399; --amber: #fbbf24; --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(1200px 600px at 80% -10%, rgba(34,211,238,0.08), transparent), var(--bg);
+    color: var(--text); font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 40px 20px 90px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header { margin-bottom: 28px; }
+  .kicker { color: var(--accent); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+  h1 { font-size: 32px; margin: 8px 0 6px; }
+  header p { color: var(--dim); margin: 0; max-width: 720px; }
+  .toolbar { margin: 18px 0 8px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .diagram {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px; margin-bottom: 26px;
+  }
+  .dhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+  .dhead h2 { font-size: 18px; margin: 0; }
+  .dhead .num { color: var(--accent); font-weight: 800; margin-right: 8px; }
+  .desc { color: var(--faint); font-size: 13px; margin: 2px 0 16px; }
+  .canvas-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; }
+  .btns { display: flex; gap: 8px; }
+  button {
+    background: var(--bg-elev2); border: 1px solid var(--border); color: var(--dim);
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: all .15s; font-weight: 600;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { background: var(--accent); color: #04121a; border-color: var(--accent); }
+  button.done { color: var(--emerald); border-color: var(--emerald); }
+  .note { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); color: var(--purple);
+    border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Argus · Autonomous TPRM</div>
+    <h1>Architecture & Flow Diagrams</h1>
+    <p>Seven diagrams covering the system architecture, the 9-agent orchestration, the assessment sequence, the explainable scoring model, the AI-vendor risk lens, the evidence lifecycle, and the Trust Passport network effect. Click <b>Download PNG</b> on any diagram for a gallery-ready image.</p>
+    <div class="toolbar">
+      <button class="primary" onclick="downloadAll()">⬇ Download all as PNG</button>
+    </div>
+    <div class="note">Tip: PNGs export at 2× for crisp, high-resolution gallery images. If a PNG ever fails in your browser, use <b>SVG</b> and convert, or just screenshot.</div>
+  </header>
+
+  <!-- 1 -->
+  <div class="diagram">
+    <div class="dhead">
+      <h2><span class="num">01</span>System Architecture</h2>
+      <div class="btns">
+        <button onclick="dlPNG('d1','argus-architecture')">Download PNG</button>
+        <button onclick="dlSVG('d1','argus-architecture')">SVG</button>
+      </div>
+    </div>
+    <div class="desc">Client dashboard → FastAPI backend → orchestrated crew → switchable LLM reasoning, tools, and a multi-tenant database.</div>
+    <div class="canvas-box"><div class="mermaid" id="d1">
+flowchart TB
+  subgraph CLIENT["Client"]
+    UI["Next.js + React Dashboard<br/>Portfolio · Vendor · Activity · Passport"]
+  end
+  subgraph BACKEND["FastAPI Backend"]
+    R["Routers<br/>auth · vendors · assessments · dashboard"]
+    O["Orchestrator"]
+    AG["9-Agent Crew"]
+    SVC["Services<br/>Scoring · Compliance · Evidence"]
+  end
+  subgraph REASON["Reasoning — switchable"]
+    OA["OpenAI GPT-5.6"]
+    GEM["Google Gemini"]
+  end
+  subgraph TOOLS["Tools"]
+    BD["Bright Data<br/>Discover · Web Unlocker"]
+    EV["PDF / Text<br/>Evidence Parser"]
+  end
+  DB[("SQLAlchemy DB<br/>SQLite / Postgres")]
+  UI -->|"REST + SSE"| R
+  R --> O --> AG
+  AG --> SVC
+  AG -->|"structured JSON"| OA
+  AG -->|"structured JSON"| GEM
+  AG --> BD
+  SVC --> EV
+  SVC --> DB
+  R --> DB
+    </div></div>
+  </div>
+
+  <!-- 2 -->
+  <div class="diagram">
+    <div class="dhead">
+      <h2><span class="num">02</span>Autonomous Agent Crew Orchestration</h2>
+      <div class="btns">
+        <button onclick="dlPNG('d2','argus-agent-crew')">Download PNG</button>
+        <button onclick="dlSVG('d2','argus-agent-crew')">SVG</button>
+      </div>
+    </div>
+    <div class="desc">The Orchestrator plans and dispatches nine specialized agents — like a real TPRM department — from one input to a board-ready decision.</div>
+    <div class="canvas-box"><div class="mermaid" id="d2">
+flowchart TD
+  Start(["Add vendor<br/>upload docs OR trust-center link"]) --> ORCH{{"Orchestrator<br/>plan &amp; dispatch"}}
+  ORCH --> A1["1 · Intake<br/>profile &amp; tier"]
+  A1 --> A2["2 · Discovery<br/>evidence + web research"]
+  A2 --> A3["3 · Compliance<br/>control mapping"]
+  A2 --> A4["4 · Questionnaire<br/>SIG Lite / CAIQ"]
+  A2 --> A5["5 · AI-Vendor Risk<br/>toward ISO 42001"]
+  A3 --> A6["6 · Risk Scoring<br/>inherent + residual"]
+  A4 --> A6
+  A5 --> A6
+  A2 -. "gated / missing docs" .-> A7["7 · Negotiation<br/>access · NDA · invite"]
+  A6 --> A8["8 · Monitoring<br/>continuous watch"]
+  A6 --> A9["9 · Executive<br/>decision"]
+  A9 --> OUT(["Approve · Conditions · Block"])
+  A8 --> PASS[("Trust Passport")]
+  A9 --> PASS
+    </div></div>
+  </div>
+
+  <!-- 3 -->
+  <div class="diagram">
+    <div class="dhead">
+      <h2><span class="num">03</span>Assessment Sequence (Live)</h2>
+      <div class="btns">
+        <button onclick="dlPNG('d3','argus-sequence')">Download PNG</button>
+        <button onclick="dlSVG('d3','argus-sequence')">SVG</button>
+      </div>
+    </div>
+    <div class="desc">One request kicks off a background crew that streams its work over SSE while persisting explainable results.</div>
+    <div class="canvas-box"><div class="mermaid" id="d3">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant API as FastAPI
+  participant O as Orchestrator
+  participant C as Agent Crew
+  participant L as LLM (GPT-5.6 / Gemini)
+  participant DB as Database
+  U->>API: POST /vendors (link or upload)
+  API->>DB: create vendor + queued assessment
+  API-->>U: assessment_id
+  API->>O: run_assessment (background)
+  loop each agent in crew
+    O->>C: run(ctx, emit)
+    C->>L: structured JSON reasoning
+    L-->>C: profile / findings / summary
+    C->>DB: append activity (SSE)
+  end
+  O->>DB: persist scores, controls, decision
+  U->>API: GET /assessments/{id}/stream
+  API-->>U: live activity + final decision
+    </div></div>
+  </div>
+
+  <!-- 4 -->
+  <div class="diagram">
+    <div class="dhead">
+      <h2><span class="num">04</span>Explainable Scoring Model</h2>
+      <div class="btns">
+        <button onclick="dlPNG('d4','argus-scoring')">Download PNG</button>
+        <button onclick="dlSVG('d4','argus-scoring')">SVG</button>
+      </div>
+    </div>
+    <div class="desc">Inherent exposure is mitigated by verified controls and questionnaire assurance, and aggravated by findings and live signals — every score ships with driver-level explanations.</div>
+    <div class="canvas-box"><div class="mermaid" id="d4">
+flowchart LR
+  DS["Data sensitivity"] --> INH(("Inherent<br/>Risk"))
+  SA["System access"] --> INH
+  VT["Vendor type<br/>SaaS / AI / MCP"] --> INH
+  INH --> RES(("Residual<br/>Risk"))
+  COV["Control coverage"] -->|"− mitigates"| RES
+  QA["Questionnaire assurance"] -->|"− mitigates"| RES
+  FND["Findings"] -->|"+ adds risk"| RES
+  MON["Live monitoring signals"] -->|"+ adds risk"| RES
+  RES --> DEC{"Decision"}
+  DEC --> AP["Approve"]
+  DEC --> AC["Approve w/ conditions"]
+  DEC --> BL["Block"]
+    </div></div>
+  </div>
+
+  <!-- 5 -->
+  <div class="diagram">
+    <div class="dhead">
+      <h2><span class="num">05</span>AI-Vendor Risk Lens (ISO 42001)</h2>
+      <div class="btns">
+        <button onclick="dlPNG('d5','argus-ai-risk')">Download PNG</button>
+        <button onclick="dlSVG('d5','argus-ai-risk')">SVG</button>
+      </div>
+    </div>
+    <div class="desc">A first-class risk dimension for AI tools, agents and MCP servers that no traditional TPRM tool treats as core.</div>
+    <div class="canvas-box"><div class="mermaid" id="d5">
+flowchart TD
+  AIV["AI-Vendor Risk<br/>mapping toward ISO 42001"] --> D1["Prompt-injection exposure"]
+  AIV --> D2["Tool / action permissions"]
+  AIV --> D3["Data retention &amp; training use"]
+  AIV --> D4["Autonomous actions"]
+  AIV --> D5["Model providers &amp; subprocessors"]
+  D1 --> FIND["AI-risk findings<br/>+ residual risk"]
+  D2 --> FIND
+  D3 --> FIND
+  D4 --> FIND
+  D5 --> FIND
+    </div></div>
+  </div>
+
+  <!-- 6 -->
+  <div class="diagram">
+    <div class="dhead">
+      <h2><span class="num">06</span>Evidence Access-State Lifecycle</h2>
+      <div class="btns">
+        <button onclick="dlPNG('d6','argus-evidence-lifecycle')">Download PNG</button>
+        <button onclick="dlSVG('d6','argus-evidence-lifecycle')">SVG</button>
+      </div>
+    </div>
+    <div class="desc">Argus models the trust-center reality — ~90% of docs are gated — as a first-class state machine, routing NDAs to a human Approver.</div>
+    <div class="canvas-box"><div class="mermaid" id="d6">
+stateDiagram-v2
+  [*] --> public
+  [*] --> requested
+  requested --> nda_pending: NDA required
+  nda_pending --> granted: Approver signs NDA
+  requested --> granted: access approved
+  granted --> downloaded
+  public --> parsed
+  downloaded --> parsed: parse + cite
+  parsed --> expired: report ages out
+  expired --> [*]
+  parsed --> [*]
+    </div></div>
+  </div>
+
+  <!-- 7 -->
+  <div class="diagram">
+    <div class="dhead">
+      <h2><span class="num">07</span>Trust Passport Network Effect</h2>
+      <div class="btns">
+        <button onclick="dlPNG('d7','argus-trust-passport')">Download PNG</button>
+        <button onclick="dlSVG('d7','argus-trust-passport')">SVG</button>
+      </div>
+    </div>
+    <div class="desc">Every assessment across every org enriches a shared, evidence-cited vendor profile — so the Nth assessment is instant and higher-confidence.</div>
+    <div class="canvas-box"><div class="mermaid" id="d7">
+flowchart TB
+  O1["Org A<br/>assessment"] --> TP[("Trust Passport<br/>shared vendor profile")]
+  O2["Org B<br/>assessment"] --> TP
+  O3["Org C<br/>assessment"] --> TP
+  TP --> E["Richer evidence<br/>+ cross-org confidence"]
+  E --> O4["New org<br/>instant, higher-confidence assessment"]
+  O4 -.->|"enriches"| TP
+    </div></div>
+  </div>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    securityLevel: "loose",
+    flowchart: { htmlLabels: false, curve: "basis", padding: 14 },
+    sequence: { useMaxWidth: true },
+    themeVariables: {
+      background: "#0b0f17",
+      primaryColor: "#111722",
+      primaryTextColor: "#e6edf6",
+      primaryBorderColor: "#22d3ee",
+      lineColor: "#8b9bb4",
+      secondaryColor: "#161d2b",
+      tertiaryColor: "#0f1622",
+      tertiaryTextColor: "#e6edf6",
+      fontFamily: "Inter, -apple-system, sans-serif",
+      fontSize: "15px",
+      clusterBkg: "#0f1622",
+      clusterBorder: "#202a3b",
+      nodeBorder: "#22d3ee",
+      edgeLabelBackground: "#0b0f17",
+      actorBkg: "#111722",
+      actorBorder: "#22d3ee",
+      actorTextColor: "#e6edf6",
+      signalColor: "#8b9bb4",
+      signalTextColor: "#9aa7bd",
+      labelBoxBkgColor: "#161d2b",
+      labelBoxBorderColor: "#22d3ee",
+      loopTextColor: "#9aa7bd",
+    },
+  });
+
+  const SCALE = 2;
+  const BG = "#0b0f17";
+
+  function getSvg(id) {
+    return document.querySelector("#" + id + " svg");
+  }
+
+  function svgString(svg) {
+    const clone = svg.cloneNode(true);
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    return new XMLSerializer().serializeToString(clone);
+  }
+
+  function dlSVG(id, name) {
+    const svg = getSvg(id);
+    if (!svg) return;
+    const blob = new Blob([svgString(svg)], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    triggerDownload(url, name + ".svg");
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function dlPNG(id, name, cb) {
+    const svg = getSvg(id);
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const w = Math.ceil((vb && vb.width) || rect.width);
+    const h = Math.ceil((vb && vb.height) || rect.height);
+    const str = svgString(svg);
+    const b64 = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str)));
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      canvas.width = w * SCALE;
+      canvas.height = h * SCALE;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = BG;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      try {
+        const url = canvas.toDataURL("image/png");
+        triggerDownload(url, name + ".png");
+      } catch (e) {
+        alert("PNG export blocked by the browser — downloading SVG instead.");
+        dlSVG(id, name);
+      }
+      if (cb) cb();
+    };
+    img.onerror = function () { alert("Could not render PNG; use the SVG button."); if (cb) cb(); };
+    img.src = b64;
+  }
+
+  function triggerDownload(url, filename) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function downloadAll() {
+    const items = [
+      ["d1", "argus-architecture"], ["d2", "argus-agent-crew"], ["d3", "argus-sequence"],
+      ["d4", "argus-scoring"], ["d5", "argus-ai-risk"], ["d6", "argus-evidence-lifecycle"],
+      ["d7", "argus-trust-passport"],
+    ];
+    let i = 0;
+    (function next() {
+      if (i >= items.length) return;
+      const [id, name] = items[i++];
+      dlPNG(id, name, () => setTimeout(next, 500));
+    })();
+  }
+</script>
+</body>
+</html>

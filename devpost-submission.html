@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Argus — Devpost Submission Answers</title>
+<style>
+  :root {
+    --bg: #0b0f17; --bg-elev: #111722; --bg-elev2: #161d2b;
+    --border: #202a3b; --text: #e6edf6; --dim: #9aa7bd; --faint: #66748c;
+    --accent: #22d3ee; --emerald: #34d399; --amber: #fbbf24; --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(1200px 600px at 80% -10%, rgba(34,211,238,0.08), transparent), var(--bg);
+    color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    line-height: 1.6; padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header { margin-bottom: 32px; }
+  .kicker { color: var(--accent); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+  h1 { font-size: 34px; margin: 8px 0 6px; }
+  header p { color: var(--dim); margin: 0; }
+  .field {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px; margin-bottom: 20px;
+  }
+  .field-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .field-head h2 { font-size: 17px; margin: 0; }
+  .req { color: var(--amber); }
+  .hint { color: var(--faint); font-size: 13px; margin: -4px 0 12px; }
+  .answer {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; white-space: pre-wrap; word-wrap: break-word; font-size: 15px;
+  }
+  .count { font-size: 12px; color: var(--faint); margin-top: 8px; }
+  .copy {
+    background: var(--bg-elev2); border: 1px solid var(--border); color: var(--dim);
+    padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap;
+    transition: all .15s;
+  }
+  .copy:hover { border-color: var(--accent); color: var(--accent); }
+  .copy.copied { color: var(--emerald); border-color: var(--emerald); }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3); color: var(--accent);
+    padding: 4px 12px; border-radius: 999px; font-size: 13px; }
+  .story h3 { color: var(--accent); font-size: 16px; margin: 22px 0 6px; }
+  .story h3:first-child { margin-top: 0; }
+  .story ul { margin: 6px 0; padding-left: 22px; }
+  .story li { margin: 4px 0; }
+  .story strong { color: var(--text); }
+  .story p { margin: 8px 0; color: var(--dim); }
+  .story .rendered strong { color: var(--text); }
+  textarea {
+    width: 100%; min-height: 320px; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; padding: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px; line-height: 1.5; resize: vertical;
+  }
+  .links a { color: var(--accent); }
+  .links li { margin: 6px 0; }
+  .note { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); color: var(--purple);
+    border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-top: 10px; }
+  .placeholder { color: var(--amber); }
+  code { background: var(--bg-elev2); padding: 2px 6px; border-radius: 5px; font-size: 13px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Devpost Submission · OpenAI Build Week</div>
+    <h1>Argus — Submission Answers</h1>
+    <p>Copy-paste each field into the Devpost form. Placeholders in <span class="placeholder">amber</span> need your real URLs.</p>
+  </header>
+
+  <!-- PROJECT NAME -->
+  <div class="field">
+    <div class="field-head">
+      <h2><span class="req">*</span> Project name</h2>
+      <button class="copy" data-copy="pname">Copy</button>
+    </div>
+    <div class="hint">Max 60 characters.</div>
+    <div class="answer" id="pname">Argus — Autonomous Third-Party Risk Management</div>
+    <div class="count">46 / 60 characters</div>
+    <div class="note">Shorter alternatives: <code>Argus — Autonomous Vendor Risk (TPRM)</code> · <code>Argus — AI-Native Vendor Risk Management</code></div>
+  </div>
+
+  <!-- ELEVATOR PITCH -->
+  <div class="field">
+    <div class="field-head">
+      <h2><span class="req">*</span> Elevator pitch</h2>
+      <button class="copy" data-copy="pitch">Copy</button>
+    </div>
+    <div class="hint">A short tagline (Devpost limit ~200 characters).</div>
+    <div class="answer" id="pitch">An AI agent crew that autonomously assesses and continuously monitors your vendors — including AI tools, agents & MCP servers — so teams with no security analyst get enterprise-grade vendor due diligence in minutes.</div>
+    <div class="count">~200 characters</div>
+  </div>
+
+  <!-- ABOUT THE PROJECT (rendered) -->
+  <div class="field">
+    <div class="field-head">
+      <h2><span class="req">*</span> About the project</h2>
+      <button class="copy" data-copy="storymd">Copy Markdown</button>
+    </div>
+    <div class="hint">Paste the Markdown below into Devpost (it accepts Markdown). A rendered preview follows.</div>
+
+    <textarea id="storymd" spellcheck="false">## Inspiration
+
+Every company now runs on dozens of SaaS and AI vendors — and before adopting each one, **someone** has to vet its security posture: collect SOC 2 / ISO reports, read the DPA, check for breaches, map controls to frameworks, fill out a 100–300 question security questionnaire, and then keep watching for changes. At mid-market and AI-first companies there is **no GRC analyst** to do this, so it lands on an engineer or ops lead buried in spreadsheets and email. Reviews take weeks, block deals, and go stale the day they finish.
+
+AI vendors make it worse. AI tools, autonomous agents and MCP servers are the fastest-growing — and riskiest — vendor class, and traditional third-party risk management (TPRM) has **no playbook** for prompt injection, tool permissions, data retention/training, or autonomous actions. We built Argus to be the vendor-risk **department** these teams never had.
+
+## What it does
+
+You add a vendor by uploading its compliance pack **or** pasting its trust-center link. Then a crew of **nine specialized AI agents** runs autonomously and live:
+
+- **Intake** — profiles and tiers the vendor by data sensitivity, system access and type (SaaS / AI agent / MCP).
+- **Discovery** — ingests evidence, handling the reality that ~90% of trust-center docs are gated behind request-access + NDA; runs live web research via Bright Data.
+- **Compliance** — maps evidence to controls across SOC 2, ISO 27001, GDPR, HIPAA, PCI DSS, NIST CSF and **ISO 42001** (AI governance), citing the exact artifact behind every result.
+- **Questionnaire** — auto-completes SIG Lite and CAIQ with cited evidence, flagging unbacked self-attestation.
+- **AI-Vendor Risk** — a first-class module for prompt-injection exposure, tool/action permissions, retention/training use and autonomous actions.
+- **Risk Scoring** — computes an explainable inherent + residual score with a driver-level breakdown.
+- **Negotiation** — routes access requests and NDAs to a human Approver (never auto-signs) and falls back to a vendor "Trust Passport" invite.
+- **Monitoring** — arms continuous watch (CVEs, breaches, cert expiry, GitHub leaks, subprocessor changes) and re-scores on change.
+- **Executive** — writes a board-ready decision: approve / approve-with-conditions / block.
+
+Everything renders in a polished portfolio + per-vendor dashboard with a **live agent-activity feed**, a **real-time residual-risk trend graph**, and control coverage front-and-center. Every assessment also enriches a shared, cross-org **Trust Passport** — so the Nth assessment of a common vendor is instant and higher-confidence.
+
+## How we built it
+
+- **Backend:** Python + FastAPI, SQLAlchemy (multi-tenant, SQLite by default, Postgres-ready), with an SSE-friendly activity feed.
+- **Frontend:** Next.js (App Router) + React + TypeScript — a dark security dashboard.
+- **Reasoning:** model-flexible via a single provider switch — **OpenAI GPT-5.6** or **Google Gemini** — with structured (JSON) outputs, and deterministic heuristics so the whole product still runs and demos fully offline.
+- **Tools:** Bright Data (vendored from the open-source `Studio1HQ/tprm-agent`) for discovery/web-unlocking, plus a real PDF/text evidence parser that detects document type and extracts dates, opinions and citation snippets.
+- **Built with OpenAI Codex + GPT-5.6:** we used Codex to pressure-test the idea against the competitive landscape, refactor the upstream linear `Discovery → Access → Action` pipeline into an orchestrated multi-agent crew, and accelerate the schema, the nine agents, the compliance/scoring engines, the FastAPI routers + SSE feed, and the entire dashboard UI.
+
+## Challenges we ran into
+
+- **The trust-center reality:** most SOC 2 / pen-test reports are gated behind NDA. We modeled document access-state as first-class (`public / requested / nda_pending / parsed / expired`) and route NDAs to a human Approver instead of pretending the evidence is available.
+- **Explainability:** a risk score no one trusts is useless, so every score ships with a driver-level breakdown and every control result cites the exact artifact and snippet.
+- **Honest evidence parsing:** real uploaded SOC 2 packs are messy (full reports + bridge letters). We had to judge a vendor's SOC 2 posture across *all* artifacts using the strongest one, rather than letting one weak document override a valid Type II — and stop treating an "unknown" opinion as a qualified one.
+- **Offline reliability:** for a live demo we couldn't depend on external APIs, so every agent has a deterministic fallback and a curated vendor knowledge base.
+
+## Accomplishments that we're proud of
+
+- A coherent, runnable **product** — not a proof-of-concept: one input → a live crew → a polished portfolio and per-vendor dashboards.
+- **First-class AI-vendor risk** (prompt injection, tool permissions, retention, autonomous actions) mapped toward ISO 42001 — a lens no incumbent treats as core.
+- A **Trust Passport network effect**: shared, evidence-cited vendor profiles that compound with every assessment.
+- Model flexibility (OpenAI **or** Gemini) behind one env switch, with graceful offline behavior.
+
+## What we learned
+
+- Vendor risk is fundamentally a **context + network** problem, and it's newly automatable end-to-end by agents — not just answer-drafting.
+- The hardest part of "autonomy" is being **honest about uncertainty** (gated docs, unverifiable claims, stale evidence) rather than fabricating confidence.
+- An orchestrated crew of small, single-purpose agents is easier to reason about, debug and make explainable than one monolithic prompt.
+
+## What's next for Argus
+
+- More frameworks and audit-ready exports (SSO, evidence bundles).
+- A vendor-side Trust Passport so vendors can publish once and be assessed everywhere.
+- Deeper continuous monitoring (real CVE/breach/dark-web feeds) and automatic re-scoring.
+- Growing the AI-vendor risk corpus into the reference layer for the AI vendor economy.
+</textarea>
+
+    <div class="story rendered" style="margin-top:18px">
+      <h3>Inspiration</h3>
+      <p>Every company now runs on dozens of SaaS and AI vendors — and before adopting each one, <strong>someone</strong> has to vet its security posture: collect SOC 2 / ISO reports, read the DPA, check for breaches, map controls, fill a 100–300 question security questionnaire, then keep watching for changes. At mid-market and AI-first companies there is <strong>no GRC analyst</strong>, so it lands on an engineer buried in spreadsheets. Reviews take weeks, block deals, and go stale the day they finish. AI tools, agents and MCP servers make it worse — the fastest-growing, riskiest vendor class, with no traditional playbook.</p>
+      <h3>What it does</h3>
+      <p>Add a vendor via upload or trust-center link, and a crew of <strong>nine AI agents</strong> autonomously profiles &amp; tiers it, ingests gated evidence, maps controls across SOC 2 / ISO 27001 / GDPR / HIPAA / PCI / NIST / ISO 42001, auto-completes SIG/CAIQ with citations, scores explainable residual risk, routes NDAs to a human Approver, arms continuous monitoring, and writes a board-ready decision — all live in a portfolio + per-vendor dashboard with a real-time risk graph and a cross-org Trust Passport network.</p>
+      <h3>How we built it</h3>
+      <p>Python + FastAPI + SQLAlchemy backend; Next.js + React + TypeScript dashboard; model-flexible reasoning (OpenAI GPT-5.6 <em>or</em> Google Gemini) with structured outputs and offline deterministic fallbacks; Bright Data discovery tools; a real PDF/text evidence parser. Designed and accelerated with OpenAI Codex + GPT-5.6.</p>
+      <h3>Challenges · Accomplishments · What we learned · What's next</h3>
+      <p>See the full Markdown above — it covers the trust-center NDA reality, explainable scoring, honest evidence parsing, offline reliability, first-class AI-vendor risk, the Trust Passport network effect, and the roadmap.</p>
+    </div>
+  </div>
+
+  <!-- BUILT WITH -->
+  <div class="field">
+    <div class="field-head">
+      <h2><span class="req">*</span> Built with</h2>
+      <button class="copy" data-copy="builtwith">Copy (comma-separated)</button>
+    </div>
+    <div class="hint">Up to 25 tags. Add them one at a time in Devpost.</div>
+    <div class="tags" id="builtwith-tags">
+      <span class="tag">python</span><span class="tag">fastapi</span><span class="tag">sqlalchemy</span>
+      <span class="tag">sqlite</span><span class="tag">uvicorn</span><span class="tag">pydantic</span>
+      <span class="tag">next.js</span><span class="tag">react</span><span class="tag">typescript</span>
+      <span class="tag">node.js</span><span class="tag">javascript</span><span class="tag">html</span><span class="tag">css</span>
+      <span class="tag">openai</span><span class="tag">gpt-5.6</span><span class="tag">codex</span>
+      <span class="tag">google-gemini</span><span class="tag">bright-data</span>
+      <span class="tag">llm</span><span class="tag">multi-agent</span><span class="tag">rest-api</span>
+      <span class="tag">server-sent-events</span><span class="tag">json-schema</span><span class="tag">iso-42001</span>
+    </div>
+    <div id="builtwith" style="display:none">python, fastapi, sqlalchemy, sqlite, uvicorn, pydantic, next.js, react, typescript, node.js, javascript, html, css, openai, gpt-5.6, codex, google-gemini, bright-data, llm, multi-agent, rest-api, server-sent-events, json-schema, iso-42001</div>
+    <div class="count">24 / 25 tags</div>
+  </div>
+
+  <!-- TRY IT OUT LINKS -->
+  <div class="field">
+    <div class="field-head">
+      <h2>"Try it out" links</h2>
+    </div>
+    <div class="hint">Add where people can try the project or see the code.</div>
+    <ul class="links">
+      <li><strong>GitHub repository:</strong> <span class="placeholder">https://github.com/&lt;your-org&gt;/argus</span></li>
+      <li><strong>Live demo:</strong> <span class="placeholder">https://argus-&lt;your-app&gt;.vercel.app</span></li>
+      <li><strong>API (health):</strong> <span class="placeholder">https://&lt;your-backend&gt;/health</span></li>
+    </ul>
+    <div class="note">Runs fully offline with deterministic heuristics — judges can also follow the README Quickstart locally (no API keys needed).</div>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="field">
+    <div class="field-head">
+      <h2><span class="req">*</span> Video demo link</h2>
+    </div>
+    <div class="hint">&lt; 3 min, public YouTube, with audio covering what you built and how you used Codex + GPT-5.6.</div>
+    <ul class="links">
+      <li><strong>YouTube:</strong> <span class="placeholder">https://youtu.be/&lt;your-demo&gt;</span></li>
+    </ul>
+    <div class="answer" style="margin-top:12px"><strong>Suggested &lt;3-min script</strong>
+0:00  Sign in (or "Use demo account"). Portfolio is empty.
+0:20  Add "Cursor" via trust-center link → watch the 9-agent crew flow light up live.
+1:00  Open the vendor: control coverage headline, explainable score drivers, cited controls.
+1:30  Add "Stripe" via upload → full compliance pack → higher coverage → approve-with-conditions.
+2:00  Open "Acme MCP" → AI Risk tab: prompt injection, unscoped tool permissions, undisclosed retention → BLOCK.
+2:30  Monitoring tab: real-time residual-risk graph. Trust Passport network. Mention Codex + GPT-5.6/Gemini.</div>
+  </div>
+
+  <!-- IMAGE GALLERY -->
+  <div class="field">
+    <div class="field-head">
+      <h2>Image gallery</h2>
+    </div>
+    <div class="hint">JPG/PNG/GIF, 5 MB max, 3:2 ratio, up to 15 images.</div>
+    <div class="answer">Architecture / flow diagrams (export from <code>diagrams.html</code> → "Download all as PNG"):
+1. System Architecture
+2. Autonomous Agent Crew Orchestration
+3. Assessment Sequence (live SSE)
+4. Explainable Scoring Model
+5. AI-Vendor Risk Lens (ISO 42001)
+6. Evidence Access-State Lifecycle
+7. Trust Passport Network Effect
+
+Product screenshots to capture:
+8. Portfolio dashboard (vendor list + risk counts).
+9. Live agent-crew flow during an assessment.
+10. Vendor detail — control coverage headline + score drivers.
+11. Compliance tab — evidence-cited control mapping.
+12. AI Risk tab (Acme MCP) — prompt injection / tool permissions.
+13. Monitoring tab — real-time residual-risk trend graph.
+14. Trust Passport network view.</div>
+    <div class="note">The 7 diagrams live in <code>diagrams.html</code> — open it and click "Download all as PNG" for gallery-ready images.</div>
+  </div>
+
+  <div class="field">
+    <div class="field-head"><h2>Category</h2></div>
+    <div class="answer">Work &amp; Productivity (workflow automation / back-office operations)</div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const el = document.getElementById(btn.dataset.copy);
+      const text = el.tagName === "TEXTAREA" ? el.value : el.textContent;
+      navigator.clipboard.writeText(text.trim()).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = "Copied ✓";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>

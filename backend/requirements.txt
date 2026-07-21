@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+pydantic-settings
+sqlalchemy
+requests
+httpx
+beautifulsoup4
+openai
+google-genai
+pypdf
+python-multipart
+sse-starlette
