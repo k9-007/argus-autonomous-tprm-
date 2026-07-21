@@ -18,12 +18,14 @@ def run(ctx: dict, emit: Emit) -> None:
     documents = ctx.get("documents", [])
     include_ai = vendor.get("vendor_type") in ("ai_agent", "mcp")
 
-    emit(NAME, "Auto-completing SIG Lite and CAIQ v4 with cited evidence...", "working")
+    tier = int(vendor.get("inherent_tier") or 3)
+    questionnaire_names = ("SIG Core", "CAIQ v4") if tier == 1 else ("SIG Lite", "CAIQ v4") if tier == 2 else ("SIG Lite",)
+    emit(NAME, f"Auto-completing {', '.join(questionnaire_names)} with cited evidence...", "working")
 
     results = []
     total_q = 0
     total_answered = 0
-    for fw in ("SIG Lite", "CAIQ v4"):
+    for fw in questionnaire_names:
         r = answer_questionnaire(fw, documents, include_ai=include_ai)
         results.append(r)
         total_q += r["total"]

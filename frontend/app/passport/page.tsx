@@ -16,7 +16,7 @@ export default function PassportNetwork() {
       <div className="topbar">
         <div>
           <h2>Trust Passport Network</h2>
-          <div className="sub">Shared, evidence-cited vendor profiles — reused across every org (the moat)</div>
+          <div className="sub">Shared public evidence metadata — tenant-uploaded reports and risk scores stay private</div>
         </div>
       </div>
       <div className="content">

@@ -7,7 +7,8 @@ web research.
 
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
+import asyncio
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .db import init_db
 from .seed import seed
+from .monitoring_service import run_due_reviews
 from .routers import orgs, vendors, assessments, dashboard, auth, activity
 
 
@@ -22,7 +24,15 @@ from .routers import orgs, vendors, assessments, dashboard, auth, activity
 async def lifespan(app: FastAPI):
     init_db()
     seed()
+    async def scheduled_reviews():
+        while True:
+            await asyncio.sleep(60 * 60)
+            await asyncio.to_thread(run_due_reviews)
+    scheduler = asyncio.create_task(scheduled_reviews())
     yield
+    scheduler.cancel()
+    with suppress(asyncio.CancelledError):
+        await scheduler
 
 
 app = FastAPI(

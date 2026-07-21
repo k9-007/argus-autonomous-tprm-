@@ -35,13 +35,26 @@ export const api = {
   me: () => req("/auth/me"),
   // core
   org: () => req("/org"),
+  audit: (limit = 80) => req(`/org/audit?limit=${limit}`),
   portfolio: () => req("/dashboard/portfolio"),
+  downloadPortfolioExport: async () => {
+    const res = await fetch(`${API}/dashboard/portfolio/export.csv`, { headers: authHeaders() });
+    if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    const url = URL.createObjectURL(await res.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "argus-portfolio.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  },
   passport: () => req("/dashboard/passport"),
   vendors: () => req("/vendors"),
   vendor: (id: string) => req(`/vendors/${id}`),
   createVendor: (body: any) => req("/vendors", { method: "POST", body: JSON.stringify(body) }),
   deleteVendor: (id: string) => req(`/vendors/${id}`, { method: "DELETE" }),
   reassess: (id: string) => req(`/vendors/${id}/assess`, { method: "POST" }),
+  updateLifecycle: (id: string, status: string) => req(`/vendors/${id}/lifecycle?status=${encodeURIComponent(status)}`, { method: "PATCH" }),
+  updateTask: (vendorId: string, taskId: string, body: any) => req(`/vendors/${vendorId}/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(body) }),
   uploadDocuments: async (id: string, files: File[]) => {
     const fd = new FormData();
     files.forEach((f) => fd.append("files", f));

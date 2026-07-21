@@ -145,7 +145,7 @@ export default function VendorDetail() {
         {tab === "Questionnaire" && <Questionnaire v={v} />}
         {tab === "AI Risk" && <AIRisk v={v} />}
         {tab === "Monitoring" && <Monitoring v={v} />}
-        {tab === "Actions" && <Actions v={v} />}
+        {tab === "Actions" && <Actions v={v} onUpdated={load} />}
       </div>
     </>
   );
@@ -448,11 +448,44 @@ function Monitoring({ v }: any) {
   );
 }
 
-function Actions({ v }: any) {
+function Actions({ v, onUpdated }: any) {
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [lifecycleBusy, setLifecycleBusy] = useState(false);
+
+  async function updateTask(task: any, status: string) {
+    setUpdating(task.id);
+    try {
+      await api.updateTask(v.id, task.id, { status });
+      await onUpdated?.();
+    } catch (error) {
+      alert("Could not update task: " + error);
+    } finally {
+      setUpdating(null);
+    }
+  }
+
+  async function updateLifecycle(status: string) {
+    setLifecycleBusy(true);
+    try {
+      await api.updateLifecycle(v.id, status);
+      await onUpdated?.();
+    } catch (error) {
+      alert("Could not update vendor lifecycle: " + error);
+    } finally {
+      setLifecycleBusy(false);
+    }
+  }
+
   return (
     <div className="card">
       <div className="section-title" style={{ marginTop: 0 }}>Access requests, NDAs &amp; outreach</div>
       <p className="hint">Argus never auto-signs legal terms — NDAs are routed to an authorized Approver.</p>
+      <div className="lifecycle-control">
+        <div><b>Vendor lifecycle</b><span>Maintain a single system-of-record state for this relationship.</span></div>
+        <select value={v.status} disabled={lifecycleBusy} onChange={(event) => updateLifecycle(event.target.value)}>
+          <option value="intake">Intake</option><option value="assessing">Assessing</option><option value="monitoring">Monitoring</option><option value="renewal">Renewal</option><option value="offboarded">Offboarded</option>
+        </select>
+      </div>
       {v.tasks?.length ? v.tasks.map((t: any, i: number) => (
         <div className="finding" key={i}>
           <div className="ftitle">
@@ -462,7 +495,15 @@ function Actions({ v }: any) {
           <div className="fdetail">
             <span className="badge ai" style={{ marginRight: 8 }}>{t.task_type}</span>
             owner: {t.owner}
+            {t.due_date && <span> · due {t.due_date}</span>}
             {t.detail && <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>{t.detail}</div>}
+            {t.status !== "complete" && (
+              <div className="task-actions">
+                <button className="btn btn-sm" disabled={updating === t.id} onClick={() => updateTask(t, "in_progress")}>Start</button>
+                <button className="btn btn-sm" disabled={updating === t.id} onClick={() => updateTask(t, "complete")}>Complete</button>
+                {t.task_type === "exception" && <button className="btn btn-sm" disabled={updating === t.id} onClick={() => updateTask(t, "accepted")}>Accept risk</button>}
+              </div>
+            )}
           </div>
         </div>
       )) : <div className="empty">No open tasks.</div>}

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -39,3 +39,15 @@ def get_current_org(
     if org is None:
         raise HTTPException(status_code=401, detail="Organization not found")
     return org
+
+
+def require_roles(*roles: str):
+    """Return a dependency enforcing least-privilege operations per workspace."""
+    def dependency(user: User | None = Depends(get_current_user)) -> User:
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
+        role = user.role.value if hasattr(user.role, "value") else user.role
+        if role not in roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient role for this action")
+        return user
+    return dependency

@@ -7,7 +7,7 @@ findings for material gaps. Also verifies evidence freshness/validity.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 
 from ..compliance.frameworks import map_all, coverage_summary
 from .base import Emit
@@ -65,6 +65,26 @@ def _check_freshness(documents: list[dict], emit: Emit) -> list[dict]:
                 "detail": f"Auditor opinion is '{bad}' (not unqualified).",
                 "sources": [],
             })
+        # An audit report over six months old should be accompanied by a bridge
+        # letter covering the gap to today.
+        recent_soc2 = [d for d in soc2 if d.get("issued_at") and d["issued_at"] >= (date.today() - timedelta(days=183)).isoformat()]
+        has_bridge = any(d.get("doc_type") == "bridge_letter" for d in documents)
+        if not recent_soc2 and not has_bridge:
+            findings.append({
+                "category": "compliance_gap", "severity": "medium",
+                "title": "SOC 2 report requires a bridge letter",
+                "detail": "Available SOC 2 evidence is more than six months old and no bridge letter was provided.",
+                "sources": [],
+            })
+    for d in documents:
+        if d.get("doc_type") == "iso27001" and d.get("state") in ("parsed", "downloaded", "granted", "public"):
+            if not (d.get("parsed") or {}).get("accredited_body"):
+                findings.append({
+                    "category": "compliance_gap", "severity": "low",
+                    "title": "ISO 27001 accreditation not verified",
+                    "detail": "The certificate does not identify an accredited certification body; analyst validation is required.",
+                    "sources": [d.get("url")] if d.get("url") else [],
+                })
     return findings
 
 

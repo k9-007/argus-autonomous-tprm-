@@ -61,6 +61,12 @@ FRAMEWORKS: dict[str, list[Control]] = {
         Control("DE", "Detect (Monitoring)", ["soc2_type2"], ["pentest"]),
         Control("RS", "Respond (Incident Response)", ["soc2_type2", "iso27001"], []),
     ],
+    "DORA": [
+        Control("DORA-5", "ICT Risk Management", ["soc2_type2", "iso27001"], []),
+        Control("DORA-17", "ICT Incident Management", ["soc2_type2", "bcdr"], ["pentest"]),
+        Control("DORA-28", "Third-party ICT Contracting", ["dpa", "soc2_type2"], []),
+        Control("DORA-30", "Subprocessor & Exit Oversight", ["subprocessors", "dpa"], []),
+    ],
     "ISO 42001": [  # AI management system
         Control("AI.5", "AI Governance & Accountability", ["iso42001", "ai_policy"], []),
         Control("AI.6", "AI Risk Assessment", ["iso42001", "ai_policy"], []),

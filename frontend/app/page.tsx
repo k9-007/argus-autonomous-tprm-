@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "./lib/api";
 import { RiskBadge, TierBadge, DecisionText, TypeBadge } from "./components/ui";
@@ -13,6 +13,7 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -60,6 +61,18 @@ export default function Portfolio() {
     const matchesRisk = riskFilter === "all" || vendor.band === riskFilter;
     return matchesSearch && matchesRisk;
   });
+  const analytics = data?.analytics;
+
+  async function exportPortfolio() {
+    setExporting(true);
+    try {
+      await api.downloadPortfolioExport();
+    } catch (error) {
+      alert("Export failed: " + error);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <>
@@ -68,9 +81,10 @@ export default function Portfolio() {
           <h2>Vendor Risk Portfolio</h2>
           <div className="sub">{data?.org?.name} · {data?.org?.required_frameworks?.join(" · ")}</div>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-          + Add vendor
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn" onClick={exportPortfolio} disabled={exporting}>{exporting ? "Exporting…" : "Export CSV"}</button>
+          <button className="btn btn-primary" onClick={() => setShowAdd(true)}>+ Add vendor</button>
+        </div>
       </div>
 
       <div className="content">
@@ -106,6 +120,37 @@ export default function Portfolio() {
                 <div className="label">Expiring evidence</div>
                 <div className="value" style={{ color: "var(--amber)" }}>{data.expiring_evidence.length}</div>
                 <div className="foot">Reports expired or within 90 days</div>
+              </div>
+            </div>
+
+            <div className="portfolio-insights">
+              <div className="card insight-card">
+                <div className="section-title" style={{ marginTop: 0 }}>Risk heatmap</div>
+                <div className="heatmap" aria-label="Risk tier by risk-band heatmap">
+                  <div />{["Critical", "High", "Medium", "Low"].map((band) => <div className="heat-label" key={band}>{band}</div>)}
+                  {[1, 2, 3, 4].map((tier) => <Fragment key={tier}>
+                    <div className="heat-label" key={`tier-${tier}`}>T{tier}</div>
+                    {["critical", "high", "medium", "low"].map((band) => {
+                      const count = analytics?.heatmap?.find((cell: any) => cell.tier === tier && cell.band === band)?.count || 0;
+                      return <div key={`${tier}-${band}`} className={`heat-cell ${band}`} style={{ opacity: count ? Math.min(.35 + count * .16, 1) : .12 }} title={`Tier ${tier}, ${band}: ${count}`}>{count || "—"}</div>;
+                    })}
+                  </Fragment>)}
+                </div>
+              </div>
+              <div className="card insight-card">
+                <div className="section-title" style={{ marginTop: 0 }}>Concentration risk</div>
+                {analytics?.concentration?.length ? analytics.concentration.slice(0, 5).map((item: any) => (
+                  <div className="driver" key={item.category}><span>{item.category}</span><b>{item.count} vendor{item.count === 1 ? "" : "s"}</b></div>
+                )) : <div className="empty">No vendor concentration yet.</div>}
+                <div className="insight-alert"><span>Overdue reviews</span><b>{analytics?.overdue_reviews || 0}</b></div>
+              </div>
+              <div className="card insight-card">
+                <div className="section-title" style={{ marginTop: 0 }}>Highest residual risk</div>
+                {data.top_risky?.length ? data.top_risky.slice(0, 4).map((vendor: any) => (
+                  <button className="risk-row" key={vendor.id} onClick={() => router.push(`/vendors/${vendor.id}`)}>
+                    <span>{vendor.name}</span><span><RiskBadge band={vendor.band} /> <b>{Math.round(vendor.residual)}</b></span>
+                  </button>
+                )) : <div className="empty">No assessed vendors yet.</div>}
               </div>
             </div>
 

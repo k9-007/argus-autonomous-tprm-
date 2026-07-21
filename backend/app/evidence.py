@@ -31,6 +31,7 @@ _DOC_TYPE_SIGNS = {
     "bcdr": ["business continuity", "disaster recovery", "bcp", "rto", "rpo"],
     "baa": ["business associate agreement", "hipaa"],
     "subprocessors": ["subprocessor", "sub-processor"],
+    "bridge_letter": ["bridge letter", "period of coverage", "no material changes"],
 }
 
 _DATE_RE = re.compile(r"(20\d{2})[-/](\d{1,2})[-/](\d{1,2})")
@@ -98,6 +99,9 @@ def parse_document(filename: str, raw: bytes) -> dict:
             parsed["opinion"] = "unknown"
     if "iso" in doc_type:
         parsed["current"] = "expired" not in lower
+        parsed["accredited_body"] = any(term in lower for term in ("accredited", "anab", "ukas", "ias"))
+    if doc_type == "bridge_letter":
+        parsed["bridges_report"] = "soc" in lower or "audit" in lower
 
     dates = _find_dates(text)
     # The most recent date is typically the report issue / audit-period end.

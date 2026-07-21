@@ -259,6 +259,56 @@ Product screenshots to capture:
     <div class="answer">Work &amp; Productivity (workflow automation / back-office operations)</div>
   </div>
 
+  <!-- FEEDBACK SESSION ID -->
+  <div class="field">
+    <div class="field-head"><h2>/feedback Session ID</h2></div>
+    <div class="hint">A string of letters/numbers from the OpenAI Codex session where most of the work happened.</div>
+    <div class="answer"><span class="placeholder">&lt;paste your Codex /feedback session ID here&gt;</span>
+
+How to get it:
+1. In the Codex CLI, run the command:  /feedback
+2. It surfaces your current Session ID (letters + numbers).
+3. Copy it and paste it into the Devpost field.
+(Also available via the Codex IDE extension / ChatGPT Codex — run /feedback in the build session.)</div>
+    <div class="note">This is NOT the same as any Cursor/other chat ID — it must come from your Codex session.</div>
+  </div>
+
+  <!-- INSTALL / TEST (optional) -->
+  <div class="field">
+    <div class="field-head">
+      <h2>Installation &amp; testing instructions</h2>
+      <button class="copy" data-copy="install">Copy</button>
+    </div>
+    <div class="hint">Only required for plugins / dev tools. Argus is a web app, so this is optional — provided for judges who want to run it.</div>
+    <div class="answer" id="install"><strong>Not a plugin/dev tool</strong> — Argus is a web app (FastAPI backend + Next.js frontend). It runs fully offline with deterministic heuristics, so judges can test it with no API keys.
+
+Supported platforms: any modern browser (frontend); macOS / Linux / Windows for the backend.
+Prerequisites: Python 3.12+ and Node 18+.
+
+--- Backend (port 8000) ---
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env        # optional: set ARGUS_LLM_PROVIDER + OPENAI_API_KEY or GEMINI_API_KEY
+uvicorn app.main:app --port 8000
+# health: http://127.0.0.1:8000/health · docs: http://127.0.0.1:8000/docs
+
+--- Frontend (port 3000) ---
+cd frontend
+npm install
+cp .env.local.example .env.local
+npm run dev
+# open http://localhost:3000
+
+--- How to test ---
+- Sign up, or click "Use demo account" (demo@acme.com / demo1234).
+- Add "Cursor" via trust-center link, "Stripe" via upload, and "Acme MCP" for AI-risk.
+- Watch the live 9-agent crew flow, then explore Compliance, AI Risk, and the real-time Monitoring graph.
+- Optional live reasoning: set ARGUS_LLM_PROVIDER=openai + OPENAI_API_KEY (GPT-5.6) or ARGUS_LLM_PROVIDER=gemini + GEMINI_API_KEY.
+
+Source: https://github.com/k9-007/argus-autonomous-tprm-</div>
+  </div>
+
 </div>
 
 <script>

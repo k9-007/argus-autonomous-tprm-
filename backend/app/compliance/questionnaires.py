@@ -21,6 +21,16 @@ SIG_LITE = [
     ("CO-01", "Does the vendor hold a current SOC 2 Type II or ISO 27001?", ["soc2_type2", "iso27001"]),
 ]
 
+# A pragmatic SIG Core extension for critical vendors. It keeps the MVP concise
+# while making Tier 1 assessments meaningfully deeper than a Tier 3/4 review.
+SIG_CORE_EXTENSION = [
+    ("AC-01", "Are privileged accounts protected with MFA and periodic access reviews?", ["soc2_type2", "iso27001"]),
+    ("IR-01", "Has incident response been tested within the last year?", ["soc2_type2", "bcdr"]),
+    ("BC-01", "Are recovery objectives documented and tested?", ["bcdr", "soc2_type2"]),
+    ("VM-01", "Are critical vulnerabilities tracked through remediation?", ["pentest", "soc2_type2"]),
+    ("TP-01", "Are subcontractors assessed before access to customer data?", ["soc2_type2", "subprocessors"]),
+]
+
 CAIQ_V4 = [
     ("AIS-01", "Are application security testing results available?", ["pentest", "soc2_type2"]),
     ("DSP-01", "Is customer data segregated in multi-tenant systems?", ["soc2_type2", "iso27001"]),
@@ -40,6 +50,7 @@ AI_ADDENDUM = [
 
 QUESTIONNAIRES = {
     "SIG Lite": SIG_LITE,
+    "SIG Core": SIG_LITE + SIG_CORE_EXTENSION,
     "CAIQ v4": CAIQ_V4,
 }
 

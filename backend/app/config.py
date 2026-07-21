@@ -5,6 +5,7 @@ Adapted from Studio1HQ/tprm-agent (MIT) `src/config.py`, extended for Argus
 """
 
 import os
+from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,7 +35,7 @@ class Settings:
     PUBLIC_URL: str = os.getenv("ARGUS_PUBLIC_URL", "http://localhost:3000")
 
     # Browser clients allowed to call the API. Comma-separate values in production.
-    CORS_ORIGINS: list[str] = [
+    CORS_ORIGINS: List[str] = [
         origin.strip()
         for origin in os.getenv("ARGUS_CORS_ORIGINS", "http://localhost:3000").split(",")
         if origin.strip()

@@ -14,16 +14,16 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from ..models import (
     Vendor, Assessment, Document, TrustPassport, AuditLog,
-    VendorType, VendorStatus, DocState, Org,
+    VendorType, VendorStatus, DocState, Org, User, Task, MonitoringEvent,
 )
-from ..schemas import VendorCreate, DocumentIn
+from ..schemas import VendorCreate, DocumentIn, TaskUpdate, MonitoringEventIn
 from ..tools import trust_center
 from ..data.fixtures import lookup_demo
 from ..agents.orchestrator import run_assessment
 from .. import evidence as evidence_mod
 from .. import services
 from ..config import settings
-from .deps import get_current_org
+from .deps import get_current_org, require_roles
 
 router = APIRouter(prefix="/vendors", tags=["vendors"])
 
@@ -69,6 +69,7 @@ def create_vendor(
     body: VendorCreate,
     background: BackgroundTasks,
     org: Org = Depends(get_current_org),
+    actor: User = Depends(require_roles("admin", "analyst")),
     db: Session = Depends(get_db),
 ):
     website = str(body.website) if body.website else None
@@ -107,7 +108,7 @@ def create_vendor(
 
     assessment = Assessment(vendor_id=vendor.id, org_id=org.id, status="queued", trigger="onboarding")
     db.add(assessment)
-    db.add(AuditLog(org_id=org.id, actor="user", action="vendor.add",
+    db.add(AuditLog(org_id=org.id, actor=actor.email, action="vendor.add",
                     target=vendor.name, detail=f"intake_mode={body.intake_mode}"))
     db.commit()
 
@@ -132,14 +133,15 @@ def get_vendor(vendor_id: str, org: Org = Depends(get_current_org), db: Session 
 
 @router.delete("/{vendor_id}")
 def delete_vendor(
-    vendor_id: str, org: Org = Depends(get_current_org), db: Session = Depends(get_db)
+    vendor_id: str, org: Org = Depends(get_current_org),
+    actor: User = Depends(require_roles("admin")), db: Session = Depends(get_db)
 ):
     vendor = db.get(Vendor, vendor_id)
     if vendor is None or vendor.org_id != org.id:
         raise HTTPException(status_code=404, detail="Vendor not found")
     name = vendor.name
     db.delete(vendor)  # cascades documents, assessments, monitoring, tasks
-    db.add(AuditLog(org_id=org.id, actor="user", action="vendor.delete", target=name))
+    db.add(AuditLog(org_id=org.id, actor=actor.email, action="vendor.delete", target=name))
     db.commit()
     return {"ok": True, "deleted": vendor_id}
 
@@ -148,6 +150,7 @@ def delete_vendor(
 def add_document(
     vendor_id: str, body: DocumentIn,
     org: Org = Depends(get_current_org), db: Session = Depends(get_db),
+    actor: User = Depends(require_roles("admin", "analyst")),
 ):
     vendor = db.get(Vendor, vendor_id)
     if vendor is None or vendor.org_id != org.id:
@@ -156,6 +159,7 @@ def add_document(
         vendor_id=vendor.id, org_id=org.id, doc_type=body.doc_type, name=body.name,
         source="upload", state=DocState.parsed, issued_at=body.issued_at, expires_at=body.expires_at,
     ))
+    db.add(AuditLog(org_id=org.id, actor=actor.email, action="document.add", target=vendor.name, detail=body.name))
     db.commit()
     return {"ok": True}
 
@@ -166,6 +170,7 @@ async def upload_documents(
     background: BackgroundTasks,
     files: list[UploadFile] = File(...),
     org: Org = Depends(get_current_org),
+    actor: User = Depends(require_roles("admin", "analyst")),
     db: Session = Depends(get_db),
 ):
     """Real document upload: parse each file, detect type, extract dates + citation."""
@@ -197,7 +202,7 @@ async def upload_documents(
     # Kick off a fresh assessment now that new evidence is available.
     assessment = Assessment(vendor_id=vendor.id, org_id=org.id, status="queued", trigger="new_evidence")
     db.add(assessment)
-    db.add(AuditLog(org_id=org.id, actor="user", action="documents.upload",
+    db.add(AuditLog(org_id=org.id, actor=actor.email, action="documents.upload",
                     target=vendor.name, detail=f"{len(parsed_docs)} file(s)"))
     db.commit()
     background.add_task(run_assessment, assessment.id)
@@ -208,6 +213,7 @@ async def upload_documents(
 def reassess(
     vendor_id: str, background: BackgroundTasks,
     org: Org = Depends(get_current_org), db: Session = Depends(get_db),
+    actor: User = Depends(require_roles("admin", "analyst")),
 ):
     vendor = db.get(Vendor, vendor_id)
     if vendor is None or vendor.org_id != org.id:
@@ -217,3 +223,70 @@ def reassess(
     db.commit()
     background.add_task(run_assessment, assessment.id)
     return {"assessment_id": assessment.id, "status": "queued"}
+
+
+@router.patch("/{vendor_id}/lifecycle")
+def update_lifecycle(
+    vendor_id: str,
+    status: VendorStatus,
+    org: Org = Depends(get_current_org),
+    actor: User = Depends(require_roles("admin", "analyst")),
+    db: Session = Depends(get_db),
+):
+    vendor = db.get(Vendor, vendor_id)
+    if vendor is None or vendor.org_id != org.id:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    vendor.status = status
+    db.add(AuditLog(org_id=org.id, actor=actor.email, action="vendor.lifecycle.update", target=vendor.name, detail=status.value))
+    db.commit()
+    return {"id": vendor.id, "status": vendor.status.value}
+
+
+@router.patch("/{vendor_id}/tasks/{task_id}")
+def update_task(
+    vendor_id: str,
+    task_id: str,
+    body: TaskUpdate,
+    org: Org = Depends(get_current_org),
+    actor: User = Depends(require_roles("admin", "analyst", "approver")),
+    db: Session = Depends(get_db),
+):
+    vendor = db.get(Vendor, vendor_id)
+    task = db.get(Task, task_id)
+    if vendor is None or vendor.org_id != org.id or task is None or task.vendor_id != vendor.id:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if body.status == "accepted" and (actor.role.value if hasattr(actor.role, "value") else actor.role) not in {"admin", "approver"}:
+        raise HTTPException(status_code=403, detail="Only an Approver can accept risk")
+    for field in ("status", "owner", "due_date", "detail"):
+        value = getattr(body, field)
+        if value is not None:
+            setattr(task, field, value)
+    db.add(AuditLog(org_id=org.id, actor=actor.email, action="task.update", target=task.title, detail=task.status))
+    db.commit()
+    return {"id": task.id, "status": task.status, "owner": task.owner, "due_date": task.due_date}
+
+
+@router.post("/{vendor_id}/monitoring-events")
+def record_monitoring_event(
+    vendor_id: str,
+    body: MonitoringEventIn,
+    background: BackgroundTasks,
+    org: Org = Depends(get_current_org),
+    actor: User = Depends(require_roles("admin", "analyst")),
+    db: Session = Depends(get_db),
+):
+    vendor = db.get(Vendor, vendor_id)
+    if vendor is None or vendor.org_id != org.id:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    trigger_rescore = body.severity in {"high", "critical"}
+    db.add(MonitoringEvent(vendor_id=vendor.id, event_type=body.event_type, severity=body.severity,
+                           title=body.title, detail=body.detail, triggered_rescore=trigger_rescore))
+    assessment = None
+    if trigger_rescore:
+        assessment = Assessment(vendor_id=vendor.id, org_id=org.id, status="queued", trigger="monitoring_event")
+        db.add(assessment)
+    db.add(AuditLog(org_id=org.id, actor=actor.email, action="monitoring.event", target=vendor.name, detail=body.title))
+    db.commit()
+    if assessment:
+        background.add_task(run_assessment, assessment.id)
+    return {"ok": True, "assessment_id": assessment.id if assessment else None, "triggered_rescore": trigger_rescore}

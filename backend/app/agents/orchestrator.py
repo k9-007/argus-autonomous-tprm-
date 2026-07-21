@@ -209,11 +209,23 @@ def _persist(db, assessment: Assessment, vendor: Vendor, org: Org, ctx: dict) ->
 def _update_passport(db, vendor: Vendor, ctx: dict) -> None:
     key = ctx.get("vendor_key") or vendor.name.lower()
     passport = db.query(TrustPassport).filter(TrustPassport.vendor_key == key).first()
+    # Passport profiles are global. Never promote customer-uploaded reports,
+    # private URLs, or tenant-specific residual scores into that shared layer.
+    # Only public trust-center metadata can be reused across organizations until
+    # a vendor explicitly claims and maintains its Passport.
+    public_documents = [
+        {
+            "doc_type": document.get("doc_type"), "name": document.get("name"),
+            "source": document.get("source"), "state": document.get("state"),
+            "issued_at": document.get("issued_at"), "expires_at": document.get("expires_at"),
+        }
+        for document in ctx.get("documents", [])
+        if document.get("source") == "trust_center" or document.get("state") == "public"
+    ]
     evidence = {
-        "documents": ctx.get("documents", []),
+        "documents": public_documents,
         "subprocessors": ctx.get("subprocessors", []),
-        "last_residual": ctx.get("residual_score"),
-        "coverage": ctx.get("coverage_summary"),
+        "sharing": "public_trust_center_metadata_only",
     }
     if passport is None:
         passport = TrustPassport(

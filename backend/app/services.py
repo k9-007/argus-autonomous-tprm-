@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from collections import Counter
 
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
@@ -94,8 +95,8 @@ def vendor_detail(db: Session, vendor: Vendor) -> dict:
     ).scalars().all()]
 
     tasks = [{
-        "title": t.title, "task_type": t.task_type, "owner": t.owner,
-        "status": t.status, "detail": t.detail,
+        "id": t.id, "title": t.title, "task_type": t.task_type, "owner": t.owner,
+        "status": t.status, "detail": t.detail, "due_date": t.due_date,
     } for t in db.execute(select(Task).where(Task.vendor_id == vendor.id)).scalars().all()]
 
     # Framework coverage rollup (weighted, matching the compliance engine).
@@ -162,9 +163,13 @@ def portfolio(db: Session, org: Org) -> dict:
 
     top = sorted([r for r in rows if r["residual"] is not None],
                  key=lambda r: r["residual"], reverse=True)[:10]
+    today = date.today().isoformat()
+    overdue = [r for r in rows if r["next_review_at"] and r["next_review_at"][:10] < today]
+    concentration = Counter((r["category"] or "Unclassified") for r in rows)
+    heatmap = [{"tier": tier, "band": band, "count": sum(1 for r in rows if r["tier"] == tier and r["band"] == band)}
+               for tier in range(1, 5) for band in ("critical", "high", "medium", "low")]
 
     # Expiring evidence across the portfolio (expired or within 90 days).
-    today = date.today().isoformat()
     expiring = []
     for v in vendors:
         for d in v.documents:
@@ -186,6 +191,11 @@ def portfolio(db: Session, org: Org) -> dict:
         },
         "vendors": rows,
         "top_risky": top,
+        "analytics": {
+            "overdue_reviews": len(overdue),
+            "concentration": [{"category": category, "count": count} for category, count in concentration.most_common(8)],
+            "heatmap": heatmap,
+        },
         "expiring_evidence": expiring,
     }
 
@@ -207,6 +217,7 @@ def passport_network(db: Session) -> dict:
             "name": p.name, "vendor_key": p.vendor_key, "category": p.category,
             "vendor_type": _enum(p.vendor_type), "assessments_count": p.assessments_count,
             "claimed": p.vendor_claimed,
-            "last_residual": (p.evidence or {}).get("last_residual"),
+            # Residual scores are tenant-contextual and intentionally never shared.
+            "last_residual": None,
         } for p in passports[:100]],
     }
